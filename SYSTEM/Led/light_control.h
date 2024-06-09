@@ -18,10 +18,22 @@ typedef enum _LIGHT_LEVEL{
     LIGHT_VERY_HIGH,
 
 }LIGHT_LEVEL;
+typedef struct _TIM_Initer{
+
+    TIM_TypeDef *Instance;
+    TIM_HandleTypeDef handler;  //初始化
+    TIM_OC_InitTypeDef oc_initer; //初始化
+    u32 channel;    //通道
+    u32 pres;   //预分频系数
+    u32 arr;   //预分频系数
+    void (*set_compare)(u32 arr);
+
+}TIM_initer;
 
 typedef struct _Light{
     GPIO_TypeDef *m_gpiox;  //gpio口
     u16 m_pin;  //引脚
+    TIM_initer tim_initer;      //定时器相关参数
     LIGHT_LEVEL light_level;    //灯光级别
     void (*light_init)(GPIO_TypeDef *gpiox, u16 pin);
     void (*light_very_high)(u32 second); //最大亮度，电压3.5V
@@ -37,7 +49,7 @@ typedef struct _Light{
 
 extern Light light;
 //初始化Light结构体
-void light_init(GPIO_TypeDef *gpiox, u16 pin);
+void light_init();
 //最大亮度，电压3.5V
 void light_very_high(u32 sec);
 
@@ -61,4 +73,5 @@ void light_gradient(u16 from, u16 to, u32 sec);
 */
 void light_breath(u8 level);
 
+void set_compare(u32 comp);
 #endif //LIGHT_IP5303_LIGHT_CONTROL_H
