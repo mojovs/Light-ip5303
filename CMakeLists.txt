@@ -55,8 +55,10 @@ include_directories(Core/Inc Drivers/STM32F1xx_HAL_Driver/Inc Drivers/STM32F1xx_
         SYSTEM/Led
         SYSTEM/Sys
         SYSTEM/pwm
-        SYSTEM/people_detect
         SYSTEM/tim
+        SYSTEM/capture
+        SYSTEM/uart
+        #SYSTEM/people_detect
         User
 )
 
@@ -68,14 +70,17 @@ file(GLOB_RECURSE SOURCES "Core/*.*" "Drivers/*.*" "User/*.*"
         "SYSTEM/Led/*.*"
         "SYSTEM/Key/*.*"
         "SYSTEM/pwm/*.*"
+        "SYSTEM/capture/*.*"
         "SYSTEM/tim/*.*"
-        "SYSTEM/people_detect/*.*"
+        "SYSTEM/uart/*.*"
+        #"SYSTEM/people_detect/*.*"
 )
 
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F103C6TX_FLASH.ld)
 
 add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 add_link_options(-mcpu=cortex-m3 -mthumb -mthumb-interwork)
+add_link_options(-specs=nano.specs) #使用精简版的std库
 add_link_options(-T ${LINKER_SCRIPT})
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})

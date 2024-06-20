@@ -4,7 +4,8 @@
 
 #include "people_detect.h"
 #include "delay.h"
-#include "light_control.h"
+#include "led_base.h"
+#include "stdio.h"
 
 void people_detect_init() {
     //初始化引脚，设置为上升沿中断
@@ -25,12 +26,14 @@ void EXTI0_IRQHandler() {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     //如果检测到biss0001信号
-    delay_ms(100);  //消抖
+    delay_ms(50);  //消抖
+    static u32 cnt=0;
+    cnt++;
     if (GPIO_Pin == GPIO_PIN_0) {
         //初始化灯
-        light.light_very_high(2);
-
+        light.light_gradient(0,500,4);
+        light.light_gradient(500,0,4);
+        printf("people:%d \r\n",cnt);
 
     }
-
 }

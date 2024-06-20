@@ -1,40 +1,56 @@
 #include "main.h"
 #include "sys.h"
 #include "delay.h"
+#include "led_base.h"
 #include "led.h"
-#include "pwm.h"
-#include "led_breath.h"
-#include "light_control.h"
-#include "people_detect.h"
+#include "light.h"
+#include "capture.h"
+//#include "people_detect.h"
+#include "retarget.h"
+#include "uart.h"
+
 
 /// PA0：读取BISS0001
 /// PA1：给IP5303提供PWM，保持芯片工作
 /// PA2：控制灯的亮灭
 /// PA6：控制led灯
 int main(void) {
+
     HAL_Init();
     Stm32_Clock_Init(RCC_PLL_MUL9);
     delay_init(72);
+    uart_init(115200);
+    RetargetInit(&uart_handle);
+    printf("start\r\n");
+    //tim3
     led_init();
-    //72M/72=1M，1M/500=2000Hz  0.5ms一周期
-    led_breath_init(500 - 1, 72 - 1);
-    people_detect_init();
-    light.tim_initer.Instance=TIM2;
-    light.tim_initer.channel=TIM_CHANNEL_3;
-    light.m_gpiox=GPIOA;
-    light.m_pin=GPIO_PIN_2;
+    //led_breath_init(500 - 1, 72 - 1);
+    //light_init();
+    //led.led_breath(5,4);
+    led.led_gradient(0,100,3);
 
-    //72M/72=1M，1M/1000=1000Hz  1ms一周期
-    light.tim_initer.pres=720-1;
-    light.tim_initer.arr=1000-1;
-    light_init();
-    //light.light_low(3);
-    light.light_breath(7);
+
+    u32 temp=0;
+    int ret=0;
+
+    TIM2_CH1_Cap_Init();
+
+
     while (1) {
         delay_ms(10);
-        led_breath();
+
+        if(TIM2CH1_CAPTURE_STA&0X80)        //成功捕获到了一次高电平
+        {
+            temp=TIM2CH1_CAPTURE_STA&0X3F;
+            temp*=0XFFFF;		 	    //溢出时间总和
+            temp+=TIM2CH1_CAPTURE_VAL;      //得到总的高电平时间
+            printf("TEMP:%d\r\n",temp);
+            //light_low(3);
+
+            TIM2CH1_CAPTURE_STA=0;          //开启下一次捕获
+        }
+
     }
     return 0;
 }
-
 
